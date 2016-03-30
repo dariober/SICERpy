@@ -1,0 +1,23 @@
+
+*** Preprocess raw files to remove reduntant reads
+cd /home/cri.camres.org/berald01/svn_git/SICERpy/trunk/SICERpy/tmp_sicer_Luvh6l/tmp_ts034_pull.bed_dir
+PYTHONPATH=/home/cri.camres.org/berald01/svn_git/SICERpy/trunk/SICERpy/lib
+/usr/bin/python /home/cri.camres.org/berald01/svn_git/SICERpy/trunk/SICERpy/src/remove_redundant_reads.py -s hg19 -t 2 -b /home/cri.camres.org/berald01/svn_git/SICERpy/trunk/SICERpy/ex/ts034_pull.bed -o /home/cri.camres.org/berald01/svn_git/SICERpy/trunk/SICERpy/tmp_sicer_Luvh6l/ts034_pull.removed.bed
+
+cd /home/cri.camres.org/berald01/svn_git/SICERpy/trunk/SICERpy/tmp_sicer_Luvh6l/tmp_ts023_input.bed_dir
+PYTHONPATH=/home/cri.camres.org/berald01/svn_git/SICERpy/trunk/SICERpy/lib
+/usr/bin/python /home/cri.camres.org/berald01/svn_git/SICERpy/trunk/SICERpy/src/remove_redundant_reads.py -s hg19 -t 2 -b /home/cri.camres.org/berald01/svn_git/SICERpy/trunk/SICERpy/ex/ts023_input.bed -o /home/cri.camres.org/berald01/svn_git/SICERpy/trunk/SICERpy/tmp_sicer_Luvh6l/ts023_input.removed.bed
+
+
+*** Partion the genome in windows
+cd /home/cri.camres.org/berald01/svn_git/SICERpy/trunk/SICERpy/tmp_sicer_Luvh6l
+PYTHONPATH=/home/cri.camres.org/berald01/svn_git/SICERpy/trunk/SICERpy/lib
+/usr/bin/python /home/cri.camres.org/berald01/svn_git/SICERpy/trunk/SICERpy/src/run-make-graph-file-by-chrom.py -s hg19 -b /home/cri.camres.org/berald01/svn_git/SICERpy/trunk/SICERpy/tmp_sicer_Luvh6l/ts034_pull.removed.bed -w 200 -i 150 -o /home/cri.camres.org/berald01/svn_git/SICERpy/trunk/SICERpy/tmp_sicer_Luvh6l/summary.bedgraph
+
+*** Find candidate islands exhibiting clustering
+PYTHONPATH=/home/cri.camres.org/berald01/svn_git/SICERpy/trunk/SICERpy/lib
+/usr/bin/python /home/cri.camres.org/berald01/svn_git/SICERpy/trunk/SICERpy/src/find_islands_in_pr.py -s hg19 -b /home/cri.camres.org/berald01/svn_git/SICERpy/trunk/SICERpy/tmp_sicer_Luvh6l/summary.bedgraph -w 200 -g 600 -t 0.74 -e 1000  -f /home/cri.camres.org/berald01/svn_git/SICERpy/trunk/SICERpy/tmp_sicer_Luvh6l/scoreisland.bed
+
+*** Calculate significance of candidate islands using the control library
+PYTHONPATH=/home/cri.camres.org/berald01/svn_git/SICERpy/trunk/SICERpy/lib
+/usr/bin/python /home/cri.camres.org/berald01/svn_git/SICERpy/trunk/SICERpy/src/associate_tags_with_chip_and_control_w_fc_q.py -s hg19  -a /home/cri.camres.org/berald01/svn_git/SICERpy/trunk/SICERpy/tmp_sicer_Luvh6l/ts034_pull.removed.bed -b /home/cri.camres.org/berald01/svn_git/SICERpy/trunk/SICERpy/tmp_sicer_Luvh6l/ts023_input.removed.bed -d /home/cri.camres.org/berald01/svn_git/SICERpy/trunk/SICERpy/tmp_sicer_Luvh6l/scoreisland.bed -f 150 -t 0.74 -o /home/cri.camres.org/berald01/svn_git/SICERpy/trunk/SICERpy/tmp_sicer_Luvh6l/island-summary.bed
