@@ -50,6 +50,7 @@ def main(argv):
     parser.add_option("-o", "--outfile", action="store", type="string",
                       dest="outfile", help="output bed summary file name",
                       metavar="<file>")
+    
     (opt, args) = parser.parse_args(argv)
     if len(argv) < 10:
         parser.print_help()
@@ -69,8 +70,6 @@ def main(argv):
 	SeparateByChrom.cleanup(chroms, ".graph");
     else:
         print opt.species + " is not in the species list ";
-	
-    
 
 if __name__ == "__main__":
 	main(sys.argv)

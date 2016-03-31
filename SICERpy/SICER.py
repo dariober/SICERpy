@@ -22,7 +22,8 @@ https://github.com/dariober/SICERpy
 
 
 parser.add_argument('--treatment', '-t',
-                   required= True,
+                   required= False,
+                   default= '-',
                    help='''Treatment (pull-down) file in bam format
                    ''')
 
@@ -44,12 +45,33 @@ parser.add_argument('--effGenomeSize', '-gs',
                    help='''Effective Genome as fraction of the genome size. It depends on read length. Default 0.74.
                    ''')
 
+parser.add_argument('--requiredFlag', '-f',
+                   required= False,
+                   default= 0,
+                   type= int,
+                   help='''Keep reads with these bits set in flag. Same as `samtools view -f`. Default 0
+                   ''')
+
+parser.add_argument('--filterFlag', '-F',
+                   required= False,
+                   default= 4,
+                   type= int,
+                   help='''Discard reads with these bits set in flag. Same as `samtools view -F`. Default 4. 
+You probably want to discard also second-in-pair reads, secondary and supplementary alignments, reads failing QC.
+                   ''')
+
+parser.add_argument('--mapq', '-q',
+                   required= False,
+                   default= 5,
+                   type= int,
+                   help='''Discard reads with mapping quality lower than this. Default 5.
+                   ''')
+
 parser.add_argument('--redThresh', '-rt',
                    required= False,
-                   default= 1,
+                   default= 0,
                    type= int,
-                   help='''Redundancy threshold to keep reads mapping to the same position on the same strand. 
-Set to 0 to skip filtering and use input as is. Default 1. 
+                   help='''Redundancy threshold to keep reads mapping to the same position on the same strand. Default 0 (do not filter for redundancy). 
                    ''')
 
 parser.add_argument('--windowSize', '-w',
@@ -66,7 +88,7 @@ parser.add_argument('--gapSize', '-g',
                    help='''Multiple of window size used to determine the gap size. Must be an integer. Default: 3.
                    ''')
 
-parser.add_argument('--fragSize', '-f',
+parser.add_argument('--fragSize', '-fs',
                    required= False,
                    default= 150,
 	           type= int,
@@ -105,6 +127,7 @@ if not args.keeptmp:
 #        raise
 ## Work with full paths
 # outputDir= os.path.abspath(args.outputDir)
+
 treatment= os.path.abspath(args.treatment)
 control= os.path.abspath(args.control)
 
@@ -116,40 +139,43 @@ control= os.path.abspath(args.control)
 
 ## Remove reduntant reads
 ## ======================
-if args.redThresh > 0:
-    sys.stderr.write("\n*** Preprocess raw files to remove reduntant reads\n")
+#if args.redThresh > 0:
+sys.stderr.write("\n*** Preprocess raw files to remove reduntant reads\n")
 
-    filteredSampleBam= os.path.join(tmpdir, os.path.basename(treatment).split('.')[0] + '.removed.bam')
-    filteredControlBam= os.path.join(tmpdir, os.path.basename(control).split('.')[0] + '.removed.bam')
-    
-    procs= []
-    for inBam, outBam in zip([treatment, control], [filteredSampleBam, filteredControlBam]):
-        # Create a separate dir for each process so tmp files don't bother each other
-        tmpRedDir= os.path.join(tmpdir, 'tmp_' + os.path.basename(inBam) + '_dir')
-        os.makedirs(tmpRedDir)
-        cmd= """cd %(tmpRedDir)s
+filteredSampleBam= os.path.join(tmpdir, os.path.basename(treatment).split('.')[0] + '.removed.bam')
+filteredControlBam= os.path.join(tmpdir, os.path.basename(control).split('.')[0] + '.removed.bam')
+
+procs= []
+for inBam, outBam in zip([treatment, control], [filteredSampleBam, filteredControlBam]):
+    # Create a separate dir for each process so tmp files don't bother each other
+    tmpRedDir= os.path.join(tmpdir, 'tmp_' + os.path.basename(inBam) + '_dir')
+    os.makedirs(tmpRedDir)
+    cmd= """cd %(tmpRedDir)s
 PYTHONPATH=%(pythonpath)s
-%(python)s %(script)s -s %(species)s -t %(redThresh)s -b %(inBam)s -o %(outBam)s""" \
-            %{'tmpRedDir': tmpRedDir,
-              'pythonpath': pythonpath, 
-              'python': python, 
-              'script': os.path.join(srcDir, 'remove_redundant_reads_bam.py'), 
-              'species': args.species, 
-              'redThresh': args.redThresh,
-              'inBam': inBam, 
-              'outBam': outBam};
-        sys.stderr.write(cmd + '\n\n')
-        p= subprocess.Popen(cmd, shell= True, stdout= subprocess.PIPE, stderr= subprocess.PIPE)
-        procs.append(p)
-    
-    for p in procs:
-        stdout, stderr= p.communicate()
-        if p.returncode != 0:
-            sys.stderr.write(stderr + '\n')
-            sys.exit(p.returncode) 
-else:
-    filteredSampleBam= treatment
-    filteredControlBam= control
+%(python)s %(script)s -s %(species)s -t %(redThresh)s -b %(inBam)s -o %(outBam)s -f %(requiredFlag)s -F %(filterFlag)s -q %(mapq)s""" \
+        %{'tmpRedDir': tmpRedDir,
+          'pythonpath': pythonpath, 
+          'python': python, 
+          'script': os.path.join(srcDir, 'remove_redundant_reads_bam.py'), 
+          'species': args.species, 
+          'redThresh': args.redThresh,
+          'inBam': inBam, 
+          'outBam': outBam,
+          'requiredFlag': args.requiredFlag,
+          'filterFlag': args.filterFlag,
+          'mapq': args.mapq};
+    sys.stderr.write(cmd + '\n\n')
+    p= subprocess.Popen(cmd, shell= True, stdout= subprocess.PIPE, stderr= subprocess.PIPE)
+    procs.append(p)
+
+for p in procs:
+    stdout, stderr= p.communicate()
+    if p.returncode != 0:
+        sys.stderr.write(stderr + '\n')
+        sys.exit(p.returncode)
+#else:
+#    filteredSampleBam= treatment
+#    filteredControlBam= control
 
 ## Partion the genome in windows
 ## =============================

@@ -38,27 +38,7 @@ cat = "cat";
 plus = re.compile("\+");
 minus = re.compile("\-");
 
-def separateByChromBam(chroms, bam):
-    """This is a faster version of the original function to split reads by chromosome
-    """
-    inBam= pysam.AlignmentFile(bam)
-
-    chromFileDict= {}
-    for chrom in chroms:
-        ## Prepare output files
-        tmpFile = chrom + '.bam'
-        chromFileDict[chrom]= pysam.AlignmentFile(tmpFile, 'wb', template= inBam)
-
-    for aln in inBam:
-        # Segregate reads
-        chrom=  aln.reference_name
-        chromFileDict[chrom].write(aln)
-    inBam.close()
-    
-    for chrom in chromFileDict:
-        chromFileDict[chrom].close()
-
-def separateByChromBamToBed(chroms, bam, extension):
+def separateByChromBamToBed(chroms, bam, extension, requiredFlag= 0, filterFlag= 0, mapq= 0):
     """
     """
     chromFileDict= {}
@@ -67,8 +47,16 @@ def separateByChromBamToBed(chroms, bam, extension):
         tmpFile = chrom + extension
         chromFileDict[chrom]= open(tmpFile, 'w')
 
-    inBam= pysam.AlignmentFile(bam)    
+    inBam= pysam.AlignmentFile(bam)
     for aln in inBam:
+        
+        if aln.mapping_quality < mapq:
+            continue
+        if (aln.flag & requiredFlag) != requiredFlag:
+            continue
+        if (aln.flag & filterFlag) != 0:
+            continue
+            
         # Segregate reads
         chrom=  aln.reference_name
         if aln.is_reverse:
@@ -82,38 +70,6 @@ def separateByChromBamToBed(chroms, bam, extension):
     for chrom in chromFileDict:
         chromFileDict[chrom].close()
 
-
-def separateByChrom(chroms, bedfile, extension):
-    """This is a faster version of the original function to split reads by chromosome
-    """
-    chromFileDict= {}
-    for chrom in chroms:
-        ## Prepare output files
-        tmpFile = chrom + extension
-        chromFileDict[chrom]= open(tmpFile, 'w')
-
-    fin= open(bedfile)    
-    for line in fin:
-        # Segregate reads
-        chrom= line.strip().split('\t')[0]
-        chromFileDict[chrom].write(line)
-
-    for chrom in chromFileDict:
-        chromFileDict[chrom].close()
-    
-def separateByChrom_deprecated(chroms, file, extension):
-    """
-    It is ok if the chroms do not include all those existing in the file.
-    """
-    for chrom in chroms:
-        match = chrom + "[[:space:]]";
-        tmpFile = chrom + extension;
-        cmd= '%s %s %s > %s' %(grep, match, file, tmpFile);
-        print cmd
-        try:
-            if os.system(cmd): raise
-        except:
-            sys.stderr.write( "Warning: " + str(chrom) + " reads do not exist in " + str(file) + "\n");
 
 def combineAllGraphFilesBedToBam(chroms, extension, template_bam, final_out):
     """
@@ -142,10 +98,20 @@ def combineAllGraphFilesBedToBam(chroms, extension, template_bam, final_out):
     outfile.close();
     return final_out
 
+def cleanup(chroms, extension):
+    for chrom in chroms:
+        file = chrom + extension;
+        try:
+            if os.remove('%s' %
+                         (file)): raise
+        except: 
+            sys.stderr.write("")
+#            sys.stderr.write("clean up failed\n");
 
 def combineAllGraphFiles(chroms, extension, final_out):
     """
     Combine the seperately processed chromosomes, return the output file name
+    TODO: Do not use a system call to concatenate
     """
     outfile = open(final_out,'w');
     outfile.close();
@@ -163,14 +129,58 @@ def combineAllGraphFiles(chroms, extension, final_out):
             print file, " file does not exist."
     return final_out
 
+# DEPRECTED
+# =========
+#def separateByChrom(chroms, bedfile, extension):
+#    """This is a faster version of the original function to split reads by chromosome
+#    """
+#    chromFileDict= {}
+#    for chrom in chroms:
+#        ## Prepare output files
+#        tmpFile = chrom + extension
+#        chromFileDict[chrom]= open(tmpFile, 'w')
+#
+#    fin= open(bedfile)    
+#    for line in fin:
+#        # Segregate reads
+#        chrom= line.strip().split('\t')[0]
+#        chromFileDict[chrom].write(line)
+#
+#    for chrom in chromFileDict:
+#        chromFileDict[chrom].close()
+    
+#def separateByChrom_deprecated(chroms, file, extension):
+#    """
+#    It is ok if the chroms do not include all those existing in the file.
+#    """
+#    for chrom in chroms:
+#        match = chrom + "[[:space:]]";
+#        tmpFile = chrom + extension;
+#        cmd= '%s %s %s > %s' %(grep, match, file, tmpFile);
+#        print cmd
+#        try:
+#            if os.system(cmd): raise
+#        except:
+#            sys.stderr.write( "Warning: " + str(chrom) + " reads do not exist in " + str(file) + "\n");
 
-def cleanup(chroms, extension):
-    for chrom in chroms:
-        file = chrom + extension;
-        try:
-            if os.remove('%s' %
-                         (file)): raise
-        except: 
-            sys.stderr.write("")
-#            sys.stderr.write("clean up failed\n");
+#def separateByChromBam(chroms, bam):
+#    """This is a faster version of the original function to split reads by chromosome
+#    """
+#    inBam= pysam.AlignmentFile(bam)
+#
+#    chromFileDict= {}
+#    for chrom in chroms:
+#        ## Prepare output files
+#        tmpFile = chrom + '.bam'
+#        chromFileDict[chrom]= pysam.AlignmentFile(tmpFile, 'wb', template= inBam)
+#
+#    for aln in inBam:
+#        # Segregate reads
+#        chrom=  aln.reference_name
+#        chromFileDict[chrom].write(aln)
+#    inBam.close()
+#    
+#    for chrom in chromFileDict:
+#        chromFileDict[chrom].close()
+
 

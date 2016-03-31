@@ -99,6 +99,10 @@ def main(argv):
                       dest="threshold", help="threshold for copy number", metavar="<int>")          
     parser.add_option("-o", "--output_file_name", action="store", type="string",
                       dest="out_file", help="output file name", metavar="<file>")
+    ## Add options to filter reads
+    parser.add_option("-f", "--requiredFlag", type= 'int', help="Required bit in sam flag. Same as samtools view -f")
+    parser.add_option("-F", "--filterFlag", type= 'int', help="Filter out bit in sam flag, Same as samtools view -F")
+    parser.add_option("-q", "--mapq", type= 'int', help="minimum mapq for a read to be kept")
     
     (opt, args) = parser.parse_args(argv)
     if len(argv) < 8:
@@ -111,13 +115,15 @@ def main(argv):
         print "This species is not recognized, exiting";
         sys.exit(1);
     
-    SeparateByChrom.separateByChromBamToBed(chroms, opt.bam_file, '.bed1')
+    SeparateByChrom.separateByChromBamToBed(chroms, opt.bam_file, '.bed1', requiredFlag= opt.requiredFlag, filterFlag= opt.filterFlag, mapq= opt.mapq)
     
-    for chrom in chroms:
-        if (Utility.fileExists(chrom + ".bed1")):
-            strand_broken_remove(chrom, opt.threshold)
-    
-    SeparateByChrom.combineAllGraphFilesBedToBam(chroms, '.bed2', opt.bam_file, opt.out_file)
+    if opt.threshold > 0:
+        for chrom in chroms:
+            if (Utility.fileExists(chrom + ".bed1")):
+                strand_broken_remove(chrom, opt.threshold)
+        SeparateByChrom.combineAllGraphFilesBedToBam(chroms, '.bed2', opt.bam_file, opt.out_file)
+    else:
+        SeparateByChrom.combineAllGraphFilesBedToBam(chroms, '.bed1', opt.bam_file, opt.out_file)
     SeparateByChrom.cleanup(chroms, '.bed1')
     SeparateByChrom.cleanup(chroms, '.bed2')
 
