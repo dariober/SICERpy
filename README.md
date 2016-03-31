@@ -1,4 +1,4 @@
-## SICERpy: A friendly wrapper around the popular SICER peak caller
+## SICERpy: A friendly version of SICER peak caller
 
 [SICER](http://home.gwu.edu/~wpeng/Software.htm) is a popular peak caller particularly suitable for detection of broad ChIP-Seq marks. 
 However, I found the original master script, `SICER.sh`, clunky to use. 
