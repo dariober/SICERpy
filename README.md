@@ -8,7 +8,8 @@ However, I found the original master script, `SICER.sh`, clunky to use.
 * **Friendly API** `SICER.py` takes command line arguments using the usual and convenient format `SICER.py --option arg`. In contrast, the original script
 takes eleven (!) positional arguments. Also, each step of the pipeline is checked for clean exit so that if something goes wrong you now right away.
 
-* **Input is BAM** As opposed to `SICER.sh` which requires bed format. To convert bed to bam see [bedtools bedtobam](http://bedtools.readthedocs.org/en/latest/content/tools/bedtobam.html)
+* **Input is BAM** As opposed to `SICER.sh` which requires bed format. Options to filter reads by flag and mapping quality are also provided.
+To convert bed to bam see [bedtools bedtobam](http://bedtools.readthedocs.org/en/latest/content/tools/bedtobam.html)
 
 * **Parallel execution of multiple SICER runs** The original script caused temporary files from multiple instances of SICER to overwrite each other. 
 `SICER.py` instead uses unique temporary directories so it can be run in parallel in the same directory from the same input files.
@@ -46,12 +47,20 @@ Here, the table of candidate islands is sent to `peaks.bed`. The log is captured
 Note that by setting the redundancy threshold to 0 we use directly the input files without further filtering. 
 This is useful if the bam file have been already de-duplicated with external tools like picard/MarkDuplicates.
 
+Apply some filtering to discard reads with low mapping quality and with certain bits set (see [explain samflag](https://broadinstitute.github.io/picard/explain-flags.html)):
+
+```
+SICER.py -t ex/test.bam -c ex/control.bam -s hg19 -F 3972 -q 5 > peaks.bed
+```
+
+**Important** if working with paired-end reads discard the second-in-pair to avoid double counting!
+
 The output is in bed format with columns:
 
 * chrom
 * start
 * end
-* ChIP island read count,
+* ChIP island read count
 * CONTROL island read count
 * p value
 * Fold change
@@ -69,8 +78,10 @@ awk '$8 < 0.01' peaks.bed > peaks.01.bed
 
 ```
 SICER.py -h
-usage: SICER.py [-h] --treatment TREATMENT --control CONTROL --species SPECIES
-                [--effGenomeSize EFFGENOMESIZE] [--redThresh REDTHRESH]
+usage: SICER.py [-h] [--treatment TREATMENT] --control CONTROL --species
+                SPECIES [--effGenomeSize EFFGENOMESIZE]
+                [--requiredFlag REQUIREDFLAG] [--filterFlag FILTERFLAG]
+                [--mapq MAPQ] [--redThresh REDTHRESH]
                 [--windowSize WINDOWSIZE] [--gapSize GAPSIZE]
                 [--fragSize FRAGSIZE] [--keeptmp] [--version]
 
@@ -97,9 +108,17 @@ optional arguments:
   --effGenomeSize EFFGENOMESIZE, -gs EFFGENOMESIZE
                         Effective Genome as fraction of the genome size. It depends on read length. Default 0.74.
                                            
+  --requiredFlag REQUIREDFLAG, -f REQUIREDFLAG
+                        Keep reads with these bits set in flag. Same as `samtools view -f`. Default 0
+                                           
+  --filterFlag FILTERFLAG, -F FILTERFLAG
+                        Discard reads with these bits set in flag. Same as `samtools view -F`. Default 4. 
+                        You probably want to discard also second-in-pair reads, secondary and supplementary alignments, reads failing QC.
+                                           
+  --mapq MAPQ, -q MAPQ  Discard reads with mapping quality lower than this. Default 5.
+                                           
   --redThresh REDTHRESH, -rt REDTHRESH
-                        Redundancy threshold to keep reads mapping to the same position on the same strand. 
-                        Set to 0 to skip filtering and use input as is. Default 1. 
+                        Redundancy threshold to keep reads mapping to the same position on the same strand. Default 0 (do not filter for redundancy). 
                                            
   --windowSize WINDOWSIZE, -w WINDOWSIZE
                         Size of the windows to scan the genome. WINDOW_SIZE is the smallest possible island. Default 200.
@@ -107,7 +126,7 @@ optional arguments:
   --gapSize GAPSIZE, -g GAPSIZE
                         Multiple of window size used to determine the gap size. Must be an integer. Default: 3.
                                            
-  --fragSize FRAGSIZE, -f FRAGSIZE
+  --fragSize FRAGSIZE, -fs FRAGSIZE
                         Size of the sequenced fragment. The center of the the fragment will be taken as half the fragment size. Default 150.
                                            
   --keeptmp             For debugging: Do not delete temp directory at the end of run.
