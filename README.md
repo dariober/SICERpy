@@ -1,12 +1,14 @@
 ## SICERpy: A friendly wrapper around the popular SICER peak caller
 
-[SICER](http://home.gwu.edu/~wpeng/Software.htm) is a popular peak caller especially suitable for detection of broad ChIP-Seq marks. 
+[SICER](http://home.gwu.edu/~wpeng/Software.htm) is a popular peak caller particularly suitable for detection of broad ChIP-Seq marks. 
 However, I found the original master script, `SICER.sh`, clunky to use. 
 
 `SICER.py` is a re-write of `SICER.sh` aimed at improving the following aspects:
 
 * **Friendly API** `SICER.py` takes command line arguments using the usual and convenient format `SICER.py --option arg`. In contrast, the original script
 takes eleven (!) positional arguments. Also, each step of the pipeline is checked for clean exit so that if something goes wrong you now right away.
+
+* **Input is BAM** As opposed to `SICER.sh` which requires bed format. To convert bed to bam see [bedtools bedtobam](http://bedtools.readthedocs.org/en/latest/content/tools/bedtobam.html)
 
 * **Parallel execution of multiple SICER runs** The original script caused temporary files from multiple instances of SICER to overwrite each other. 
 `SICER.py` instead uses unique temporary directories so it can be run in parallel in the same directory from the same input files.
@@ -17,7 +19,8 @@ takes eleven (!) positional arguments. Also, each step of the pipeline is checke
 
 ## Requirements and Installation
 
-Requirements are the same as the original `SICER`: python 2.6+ with `scipy` package. 
+`SICER.py` requires python 2.6+ with `scipy` package as per the original version. 
+In addition it requires the [pysam](http://pysam.readthedocs.org/en/latest/) package.
 
 To install, first download the `SICERpy` directory and change permission of `SICER.py` to be executable: `chmod 755 SICER.py`.
 Then use sicer in one of the following ways:
@@ -36,12 +39,12 @@ ln -s /path/to/SICERpy/SICER.py ~/bin/
 These input files can be found in the `ex/` directory.
 
 ```
-SICER.py -t ex/test.bed -c ex/control.bed -s hg19 -rt 0 > peaks.bed 2> sicer.log
+SICER.py -t ex/test.bam -c ex/control.bam -s hg19 -rt 0 > peaks.bed 2> sicer.log
 ```
 
 Here, the table of candidate islands is sent to `peaks.bed`. The log is captured by stderr. 
 Note that by setting the redundancy threshold to 0 we use directly the input files without further filtering. 
-This is useful if the bed file have been already de-duplicated with external tools like picard/MarkDuplicates.
+This is useful if the bam file have been already de-duplicated with external tools like picard/MarkDuplicates.
 
 The output is in bed format with columns:
 
@@ -83,10 +86,10 @@ https://github.com/dariober/SICERpy
 optional arguments:
   -h, --help            show this help message and exit
   --treatment TREATMENT, -t TREATMENT
-                        Treatment (pull-down) file in bed format
+                        Treatment (pull-down) file in bam format
                                            
   --control CONTROL, -c CONTROL
-                        Control (input) file in bed format
+                        Control (input) file in bam format
                                            
   --species SPECIES, -s SPECIES
                         Species to use. See or edit lib/GenomeData.py for available species. 
@@ -96,7 +99,7 @@ optional arguments:
                                            
   --redThresh REDTHRESH, -rt REDTHRESH
                         Redundancy threshold to keep reads mapping to the same position on the same strand. 
-                        Set to 0 to skip filtering and use input bed as is. Default 1. 
+                        Set to 0 to skip filtering and use input as is. Default 1. 
                                            
   --windowSize WINDOWSIZE, -w WINDOWSIZE
                         Size of the windows to scan the genome. WINDOW_SIZE is the smallest possible island. Default 200.
@@ -122,3 +125,9 @@ Original papers describing SICER:
 * [A clustering approach for identification of enriched domains from histone modification ChIP-Seq data](http://bioinformatics.oxfordjournals.org/content/25/15/1952.full)
 
 * Google group for SICER: https://groups.google.com/forum/#!forum/sicer-users
+
+## TODO
+
+* Clean up the mess inside SICERpy. Lots of original code and scripts are not necessary anymore.
+* Re-write the other `SICER*.sh` scripts
+

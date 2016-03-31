@@ -21,6 +21,7 @@
 # Version 1.1  6/9/2010
 
 
+import pysam
 import re, os, sys, shutil
 from math import *   
 from string import *
@@ -36,6 +37,51 @@ cat = "cat";
 
 plus = re.compile("\+");
 minus = re.compile("\-");
+
+def separateByChromBam(chroms, bam):
+    """This is a faster version of the original function to split reads by chromosome
+    """
+    inBam= pysam.AlignmentFile(bam)
+
+    chromFileDict= {}
+    for chrom in chroms:
+        ## Prepare output files
+        tmpFile = chrom + '.bam'
+        chromFileDict[chrom]= pysam.AlignmentFile(tmpFile, 'wb', template= inBam)
+
+    for aln in inBam:
+        # Segregate reads
+        chrom=  aln.reference_name
+        chromFileDict[chrom].write(aln)
+    inBam.close()
+    
+    for chrom in chromFileDict:
+        chromFileDict[chrom].close()
+
+def separateByChromBamToBed(chroms, bam, extension):
+    """
+    """
+    chromFileDict= {}
+    for chrom in chroms:
+        ## Prepare output files
+        tmpFile = chrom + extension
+        chromFileDict[chrom]= open(tmpFile, 'w')
+
+    inBam= pysam.AlignmentFile(bam)    
+    for aln in inBam:
+        # Segregate reads
+        chrom=  aln.reference_name
+        if aln.is_reverse:
+            strand= '-'
+        else:
+            strand= '+'
+        bedline= '\t'.join([chrom, str(aln.reference_start), str(aln.reference_end + 1), aln.query_name, str(aln.mapping_quality), strand])
+        chromFileDict[chrom].write(bedline + '\n')
+    inBam.close()
+    
+    for chrom in chromFileDict:
+        chromFileDict[chrom].close()
+
 
 def separateByChrom(chroms, bedfile, extension):
     """This is a faster version of the original function to split reads by chromosome
@@ -55,7 +101,6 @@ def separateByChrom(chroms, bedfile, extension):
     for chrom in chromFileDict:
         chromFileDict[chrom].close()
     
-    
 def separateByChrom_deprecated(chroms, file, extension):
     """
     It is ok if the chroms do not include all those existing in the file.
@@ -69,6 +114,33 @@ def separateByChrom_deprecated(chroms, file, extension):
             if os.system(cmd): raise
         except:
             sys.stderr.write( "Warning: " + str(chrom) + " reads do not exist in " + str(file) + "\n");
+
+def combineAllGraphFilesBedToBam(chroms, extension, template_bam, final_out):
+    """
+    Combine the seperately processed chromosomes, return the output file name
+    NB: Some attributes of AlignedSegment cannot be set. 
+    See also http://pysam.readthedocs.org/en/latest/usage.html#creating-bam-cram-sam-files-from-scratch
+    """
+    template= pysam.AlignmentFile(template_bam);
+    outfile = pysam.AlignmentFile(final_out, 'wb', template= template);
+    template.close()
+    for chrom in chroms:
+        inbed= open(chrom + extension)
+        tid= outfile.get_tid(chrom)
+        for line in inbed:
+            line= line.strip().split('\t')
+            aln= pysam.AlignedSegment() 
+            aln.query_name= line[3]
+            aln.reference_id= tid
+            aln.reference_start= int(line[1])
+            aln.cigarstring= str(int(line[2]) - int(line[1]) - 1) + 'M'
+            aln.is_reverse= False
+            if line[5] == '-':
+                aln.is_reverse= True
+            outfile.write(aln)
+        inbed.close()            
+    outfile.close();
+    return final_out
 
 
 def combineAllGraphFiles(chroms, extension, final_out):

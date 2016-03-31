@@ -93,8 +93,8 @@ def main(argv):
     parser = OptionParser()
     parser.add_option("-s", "--species", action="store", type="string",
                       dest="species", help="species under consideration", metavar="<str>")
-    parser.add_option("-b", "--raw_bed_file", action="store", type="string",
-                      dest="bed_file", help="raw bed file", metavar="<file>")
+    parser.add_option("-b", "--raw_bam_file", action="store", type="string",
+                      dest="bam_file", help="raw bam file", metavar="<file>")
     parser.add_option("-t", "--threshold", action="store", type="int",
                       dest="threshold", help="threshold for copy number", metavar="<int>")          
     parser.add_option("-o", "--output_file_name", action="store", type="string",
@@ -111,13 +111,13 @@ def main(argv):
         print "This species is not recognized, exiting";
         sys.exit(1);
     
-    SeparateByChrom.separateByChrom(chroms, opt.bed_file, '.bed1')
+    SeparateByChrom.separateByChromBamToBed(chroms, opt.bam_file, '.bed1')
     
     for chrom in chroms:
         if (Utility.fileExists(chrom + ".bed1")):
             strand_broken_remove(chrom, opt.threshold)
     
-    SeparateByChrom.combineAllGraphFiles(chroms, '.bed2', opt.out_file)
+    SeparateByChrom.combineAllGraphFilesBedToBam(chroms, '.bed2', opt.bam_file, opt.out_file)
     SeparateByChrom.cleanup(chroms, '.bed1')
     SeparateByChrom.cleanup(chroms, '.bed2')
 

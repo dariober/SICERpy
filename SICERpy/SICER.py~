@@ -148,7 +148,7 @@ PYTHONPATH=%(pythonpath)s
             sys.stderr.write(stderr + '\n')
             sys.exit(p.returncode) 
 else:
-    filteredSampleBam= treatment
+    filteredSampleBa,= treatment
     filteredControlBam= control
 
 ## Partion the genome in windows
