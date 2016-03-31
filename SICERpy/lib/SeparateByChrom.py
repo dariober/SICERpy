@@ -56,7 +56,8 @@ def separateByChromBamToBed(chroms, bam, extension, requiredFlag= 0, filterFlag=
             continue
         if (aln.flag & filterFlag) != 0:
             continue
-            
+        if aln.reference_name not in chromFileDict:
+            continue # This can happen if some chroms have been removed from GenomeData
         # Segregate reads
         chrom=  aln.reference_name
         if aln.is_reverse:

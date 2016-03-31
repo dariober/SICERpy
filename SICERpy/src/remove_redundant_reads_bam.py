@@ -112,7 +112,7 @@ def main(argv):
     if opt.species in GenomeData.species_chroms.keys():
         chroms = GenomeData.species_chroms[opt.species];
     else:
-        print "This species is not recognized, exiting";
+        sys.stderr.write("\nThis species is not recognized, exiting\n");
         sys.exit(1);
     
     SeparateByChrom.separateByChromBamToBed(chroms, opt.bam_file, '.bed1', requiredFlag= opt.requiredFlag, filterFlag= opt.filterFlag, mapq= opt.mapq)

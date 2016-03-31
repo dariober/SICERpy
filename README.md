@@ -148,5 +148,9 @@ Original papers describing SICER:
 ## TODO
 
 * Clean up the mess inside SICERpy. Lots of original code and scripts are not necessary anymore.
+* Handle cases where window size is larger than chrom size. Currently
+  the solution is to create new genomes without the small chromosomes.
+* In fact, you don't need the genome data at all since it can be
+  extracted from the bam header!
 * Re-write the other `SICER*.sh` scripts
 

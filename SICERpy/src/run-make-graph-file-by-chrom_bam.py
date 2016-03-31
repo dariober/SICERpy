@@ -69,7 +69,7 @@ def main(argv):
 
 	SeparateByChrom.cleanup(chroms, ".graph");
     else:
-        print opt.species + " is not in the species list ";
+        sys.stderr.write(opt.species + " is not in the species list \n");
 
 if __name__ == "__main__":
 	main(sys.argv)

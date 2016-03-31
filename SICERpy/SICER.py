@@ -151,7 +151,7 @@ for inBam, outBam in zip([treatment, control], [filteredSampleBam, filteredContr
     tmpRedDir= os.path.join(tmpdir, 'tmp_' + os.path.basename(inBam) + '_dir')
     os.makedirs(tmpRedDir)
     cmd= """cd %(tmpRedDir)s
-PYTHONPATH=%(pythonpath)s
+export PYTHONPATH=%(pythonpath)s
 %(python)s %(script)s -s %(species)s -t %(redThresh)s -b %(inBam)s -o %(outBam)s -f %(requiredFlag)s -F %(filterFlag)s -q %(mapq)s""" \
         %{'tmpRedDir': tmpRedDir,
           'pythonpath': pythonpath, 
@@ -182,7 +182,7 @@ for p in procs:
 sys.stderr.write('\n*** Partion the genome in windows\n')
 summaryGraph= os.path.join(tmpdir, 'summary.bedgraph')
 cmd= """cd %(tmpdir)s
-PYTHONPATH=%(pythonpath)s
+export PYTHONPATH=%(pythonpath)s
 %(python)s %(script)s -s %(species)s -b %(filteredSampleBam)s -w %(windowSize)s -i %(fragSize)s -o %(summaryGraph)s""" \
             %{'tmpdir': tmpdir,
               'pythonpath': pythonpath, 
@@ -205,7 +205,7 @@ if p.returncode != 0:
 ## ============================================
 sys.stderr.write('\n*** Find candidate islands exhibiting clustering\n')
 island= os.path.join(tmpdir, 'scoreisland.bed')
-cmd= """PYTHONPATH=%(pythonpath)s
+cmd= """export PYTHONPATH=%(pythonpath)s
 %(python)s %(script)s -s %(species)s -b %(summaryGraph)s -w %(windowSize)s -g %(gapSize)s -t %(effGenomeSize)s -e %(evalue)s  -f %(island)s""" \
             %{'pythonpath': pythonpath, 
               'python': python, 
@@ -228,7 +228,7 @@ if p.returncode != 0:
 ## =====================================================================
 sys.stderr.write('\n*** Calculate significance of candidate islands using the control library\n')
 islandSig= os.path.join(tmpdir, 'island-summary.bed')
-cmd= """PYTHONPATH=%(pythonpath)s
+cmd= """export PYTHONPATH=%(pythonpath)s
 %(python)s %(script)s -s %(species)s  -a %(filteredSampleBam)s -b %(filteredControlBam)s -d %(island)s -f %(fragSize)s -t %(effGenomeSize)s -o %(islandSig)s""" \
             %{'pythonpath': pythonpath, 
               'python': python, 
