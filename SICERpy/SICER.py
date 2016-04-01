@@ -33,10 +33,10 @@ parser.add_argument('--control', '-c',
                    help='''Control (input) file in bam format
                    ''')
 
-parser.add_argument('--species', '-s',
-                   required= True,
-                   help='''Species to use. See or edit lib/GenomeData.py for available species. 
-                   ''')
+#parser.add_argument('--species', '-s',
+#                   required= True,
+#                   help='''Species to use. See or edit lib/GenomeData.py for available species. 
+#                   ''')
 
 parser.add_argument('--effGenomeSize', '-gs',
                    required= False,
@@ -152,12 +152,11 @@ for inBam, outBam in zip([treatment, control], [filteredSampleBam, filteredContr
     os.makedirs(tmpRedDir)
     cmd= """cd %(tmpRedDir)s
 export PYTHONPATH=%(pythonpath)s
-%(python)s %(script)s -s %(species)s -t %(redThresh)s -b %(inBam)s -o %(outBam)s -f %(requiredFlag)s -F %(filterFlag)s -q %(mapq)s""" \
+%(python)s %(script)s -t %(redThresh)s -b %(inBam)s -o %(outBam)s -f %(requiredFlag)s -F %(filterFlag)s -q %(mapq)s""" \
         %{'tmpRedDir': tmpRedDir,
           'pythonpath': pythonpath, 
           'python': python, 
-          'script': os.path.join(srcDir, 'remove_redundant_reads_bam.py'), 
-          'species': args.species, 
+          'script': os.path.join(srcDir, 'remove_redundant_reads_bam.py'),
           'redThresh': args.redThresh,
           'inBam': inBam, 
           'outBam': outBam,
@@ -173,6 +172,7 @@ for p in procs:
     if p.returncode != 0:
         sys.stderr.write(stderr + '\n')
         sys.exit(p.returncode)
+sys.stderr.write(stderr + '\n')
 #else:
 #    filteredSampleBam= treatment
 #    filteredControlBam= control
@@ -183,12 +183,11 @@ sys.stderr.write('\n*** Partion the genome in windows\n')
 summaryGraph= os.path.join(tmpdir, 'summary.bedgraph')
 cmd= """cd %(tmpdir)s
 export PYTHONPATH=%(pythonpath)s
-%(python)s %(script)s -s %(species)s -b %(filteredSampleBam)s -w %(windowSize)s -i %(fragSize)s -o %(summaryGraph)s""" \
+%(python)s %(script)s -b %(filteredSampleBam)s -w %(windowSize)s -i %(fragSize)s -o %(summaryGraph)s""" \
             %{'tmpdir': tmpdir,
               'pythonpath': pythonpath, 
               'python': python, 
               'script': os.path.join(srcDir, 'run-make-graph-file-by-chrom_bam.py'), 
-              'species': args.species, 
               'filteredSampleBam': filteredSampleBam,
               'windowSize': args.windowSize,
               'fragSize': args.fragSize,
@@ -200,17 +199,18 @@ stdout, stderr= p.communicate()
 if p.returncode != 0:
     sys.stderr.write(stderr + '\n')
     sys.exit(p.returncode)
+sys.stderr.write(stderr + '\n')
 
 ## Find candidate islands exhibiting clustering
 ## ============================================
 sys.stderr.write('\n*** Find candidate islands exhibiting clustering\n')
 island= os.path.join(tmpdir, 'scoreisland.bed')
 cmd= """export PYTHONPATH=%(pythonpath)s
-%(python)s %(script)s -s %(species)s -b %(summaryGraph)s -w %(windowSize)s -g %(gapSize)s -t %(effGenomeSize)s -e %(evalue)s  -f %(island)s""" \
+%(python)s %(script)s --bam %(bam)s -b %(summaryGraph)s -w %(windowSize)s -g %(gapSize)s -t %(effGenomeSize)s -e %(evalue)s  -f %(island)s""" \
             %{'pythonpath': pythonpath, 
               'python': python, 
               'script': os.path.join(srcDir, 'find_islands_in_pr.py'), 
-              'species': args.species,
+              'bam': args.treatment,
               'summaryGraph': summaryGraph, 
               'windowSize': args.windowSize,
               'gapSize': args.gapSize * args.windowSize,
@@ -223,17 +223,17 @@ stdout, stderr= p.communicate()
 if p.returncode != 0:
     sys.stderr.write(stderr + '\n')
     sys.exit(p.returncode)
+sys.stderr.write(stderr + '\n')
 
 ## Calculate significance of candidate islands using the control library
 ## =====================================================================
 sys.stderr.write('\n*** Calculate significance of candidate islands using the control library\n')
 islandSig= os.path.join(tmpdir, 'island-summary.bed')
 cmd= """export PYTHONPATH=%(pythonpath)s
-%(python)s %(script)s -s %(species)s  -a %(filteredSampleBam)s -b %(filteredControlBam)s -d %(island)s -f %(fragSize)s -t %(effGenomeSize)s -o %(islandSig)s""" \
+%(python)s %(script)s -a %(filteredSampleBam)s -b %(filteredControlBam)s -d %(island)s -f %(fragSize)s -t %(effGenomeSize)s -o %(islandSig)s""" \
             %{'pythonpath': pythonpath, 
               'python': python, 
               'script': os.path.join(srcDir, 'associate_tags_with_chip_and_control_w_fc_q_bam.py'), 
-              'species': args.species,
               'filteredSampleBam': filteredSampleBam, 
               'filteredControlBam': filteredControlBam,
               'island': island,
@@ -247,6 +247,7 @@ stdout, stderr= p.communicate()
 if p.returncode != 0:
     sys.stderr.write(stderr + '\n')
     sys.exit(p.returncode)
+sys.stderr.write(stderr + '\n')
 
 ## Finally print to stdout
 fin= open(islandSig)
@@ -255,6 +256,4 @@ for line in fin:
 fin.close()
 
 sys.exit()
-
-
 

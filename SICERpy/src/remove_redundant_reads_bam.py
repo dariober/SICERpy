@@ -109,11 +109,12 @@ def main(argv):
             parser.print_help()
             sys.exit(1)
     
-    if opt.species in GenomeData.species_chroms.keys():
-        chroms = GenomeData.species_chroms[opt.species];
-    else:
-        sys.stderr.write("\nThis species is not recognized, exiting\n");
-        sys.exit(1);
+    #if opt.species in GenomeData.species_chroms.keys():
+    #    chroms = GenomeData.species_chroms[opt.species];
+    #else:
+    #    sys.stderr.write("\nThis species is not recognized, exiting\n");
+    #    sys.exit(1);
+    chroms= SeparateByChrom.getChromsFromBam(opt.bam_file)
     
     SeparateByChrom.separateByChromBamToBed(chroms, opt.bam_file, '.bed1', requiredFlag= opt.requiredFlag, filterFlag= opt.filterFlag, mapq= opt.mapq)
     

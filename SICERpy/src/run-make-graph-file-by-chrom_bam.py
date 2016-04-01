@@ -15,20 +15,20 @@ from optparse import OptionParser
 
 ## get BED module
 import BED
-import GenomeData
+# import GenomeData
 import make_graph_file
 import SeparateByChrom
 
 def makeGraphFile(chroms, chrom_lengths, window, fragment_size):
-	for chrom in chroms:
-		if chrom in chrom_lengths.keys():
-			chrom_length = chrom_lengths[chrom];
-		else:
-			 print "Can not find the length of ", chrom;
-			 exit(1);
-		bed_file = chrom + ".bed";	
-		graph_file = chrom + ".graph";
-		make_graph_file.make_graph_file(bed_file, chrom, chrom_length, window, fragment_size, graph_file)		
+    for chrom in chroms:
+        if chrom in chrom_lengths.keys():
+            chrom_length = chrom_lengths[chrom];
+        else:
+             print "Can not find the length of ", chrom;
+             exit(1);
+        bed_file = chrom + ".bed";	
+        graph_file = chrom + ".graph";
+        make_graph_file.make_graph_file(bed_file, chrom, chrom_length, window, fragment_size, graph_file)		
  
 def main(argv):
     """
@@ -50,26 +50,29 @@ def main(argv):
     parser.add_option("-o", "--outfile", action="store", type="string",
                       dest="outfile", help="output bed summary file name",
                       metavar="<file>")
-    
+
     (opt, args) = parser.parse_args(argv)
-    if len(argv) < 10:
-        parser.print_help()
-        sys.exit(1)
+    #if len(argv) < 10:
+    #    sys.stderr.write(str(len(argv)) + '\n')
+    #    parser.print_help()
+    #    sys.exit(1)
+    #
+    #if opt.species in GenomeData.species_chroms.keys():
+    #    chroms = GenomeData.species_chroms[opt.species];
+    #
+	#chrom_lengths = GenomeData.species_chrom_lengths[opt.species];
+    chromsDict= SeparateByChrom.getChromsFromBam(opt.bamfile)
 
-    if opt.species in GenomeData.species_chroms.keys():
-        chroms = GenomeData.species_chroms[opt.species];
+    SeparateByChrom.separateByChromBamToBed(chromsDict.keys(), opt.bamfile, '.bed');
 
-	chrom_lengths = GenomeData.species_chrom_lengths[opt.species];
-        SeparateByChrom.separateByChromBamToBed(chroms, opt.bamfile, '.bed');
+    makeGraphFile(chromsDict.keys(), chromsDict, opt.window_size, opt.fragment_size);
+    final_output_file = opt.outfile;
+    final_output_file = SeparateByChrom.combineAllGraphFiles(chromsDict.keys(), ".graph", final_output_file);
+    SeparateByChrom.cleanup(chromsDict.keys(), ".bed");
 
-	makeGraphFile(chroms, chrom_lengths, opt.window_size, opt.fragment_size);
-        final_output_file = opt.outfile;
-        final_output_file = SeparateByChrom.combineAllGraphFiles(chroms, ".graph", final_output_file);
-        SeparateByChrom.cleanup(chroms, ".bed");
-
-	SeparateByChrom.cleanup(chroms, ".graph");
-    else:
-        sys.stderr.write(opt.species + " is not in the species list \n");
+    SeparateByChrom.cleanup(chromsDict.keys(), ".graph");
+    #else:
+    #    sys.stderr.write(opt.species + " is not in the species list \n");
 
 if __name__ == "__main__":
 	main(sys.argv)

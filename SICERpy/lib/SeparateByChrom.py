@@ -38,6 +38,17 @@ cat = "cat";
 plus = re.compile("\+");
 minus = re.compile("\-");
 
+def getChromsFromBam(bamfile):
+    """Read bam file and return dict of {chrom_name: length}
+    """
+    inbam= pysam.AlignmentFile(bamfile)
+    lengths= inbam.lengths
+    references= inbam.references
+    chroms= {}
+    for x, l in zip(references, lengths):
+        chroms[x]= l
+    return chroms
+
 def separateByChromBamToBed(chroms, bam, extension, requiredFlag= 0, filterFlag= 0, mapq= 0):
     """
     """

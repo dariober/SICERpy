@@ -50,7 +50,7 @@ This is useful if the bam file have been already de-duplicated with external too
 Apply some filtering to discard reads with low mapping quality and with certain bits set (see [explain samflag](https://broadinstitute.github.io/picard/explain-flags.html)):
 
 ```
-SICER.py -t ex/test.bam -c ex/control.bam -s hg19 -F 3972 -q 5 > peaks.bed
+SICER.py -t ex/test.bam -c ex/control.bam -F 3972 -q 5 > peaks.bed
 ```
 
 **Important** if working with paired-end reads discard the second-in-pair to avoid double counting!
@@ -101,9 +101,6 @@ optional arguments:
                                            
   --control CONTROL, -c CONTROL
                         Control (input) file in bam format
-                                           
-  --species SPECIES, -s SPECIES
-                        Species to use. See or edit lib/GenomeData.py for available species. 
                                            
   --effGenomeSize EFFGENOMESIZE, -gs EFFGENOMESIZE
                         Effective Genome as fraction of the genome size. It depends on read length. Default 0.74.

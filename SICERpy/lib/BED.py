@@ -177,7 +177,7 @@ class BED:
     Class to deal with bed files and do common operations 
     """ 
     
-    def __init__(self, species="hg18", file=None, bed_type="BED3", val_threshold=0):
+    def __init__(self, chromList, file=None, bed_type="BED3", val_threshold=0):
 
         """ Overload __init__ so that if a threshold is given, only
         grab bed vals that are above threshold -- This won't do
@@ -194,8 +194,10 @@ class BED:
         """
         initialize a dictionary with chromosomes
         """
-        for c in GenomeData.species_chroms[species]:
+        for c in chromList:
             self.bed_vals[c] = [];
+        #for c in GenomeData.species_chroms[species]:
+        #    self.bed_vals[c] = [];
 
         if(file):
             if re.match(bed_type, "BED3"):
