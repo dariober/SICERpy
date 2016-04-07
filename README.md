@@ -1,3 +1,5 @@
+_NB This project is most likely superseded by [epic](https://github.com/endrebak/epic); use that instead_
+
 ## SICERpy: A friendly version of SICER peak caller
 
 [SICER](http://home.gwu.edu/~wpeng/Software.htm) is a popular peak caller particularly suitable for detection of broad ChIP-Seq marks. 
