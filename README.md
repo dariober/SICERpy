@@ -42,7 +42,7 @@ ln -s /path/to/SICERpy/SICER.py ~/bin/
 These input files can be found in the `ex/` directory.
 
 ```
-SICER.py -t ex/test.bam -c ex/control.bam -s hg19 -rt 0 > peaks.bed 2> sicer.log
+SICER.py -t ex/test.bam -c ex/control.bam -rt 0 > peaks.bed 2> sicer.log
 ```
 
 Here, the table of candidate islands is sent to `peaks.bed`. The log is captured by stderr. 
