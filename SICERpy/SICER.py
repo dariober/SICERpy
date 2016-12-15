@@ -112,11 +112,15 @@ srcDir= os.path.join(os.path.dirname(os.path.realpath(__file__)), 'src')
 python= sys.executable ## Path to python itself
 pythonpath= os.path.join(os.path.dirname(os.path.realpath(__file__)), 'lib')
 
+treatment= os.path.abspath(args.treatment)
+control= os.path.abspath(args.control)
 
 ## Set tmp dir
 tmpdir= tempfile.mkdtemp(prefix= 'tmp_sicer_', dir= os.getcwd())
 if not args.keeptmp:
     atexit.register(shutil.rmtree, tmpdir)
+
+os.chdir(tmpdir)
 
 ## Create output dir see also 
 ## http://stackoverflow.com/questions/273192/how-to-check-if-a-directory-exists-and-create-it-if-necessary
@@ -127,9 +131,6 @@ if not args.keeptmp:
 #        raise
 ## Work with full paths
 # outputDir= os.path.abspath(args.outputDir)
-
-treatment= os.path.abspath(args.treatment)
-control= os.path.abspath(args.control)
 
 ## Basename
 #if not args.basename:
@@ -142,8 +143,8 @@ control= os.path.abspath(args.control)
 #if args.redThresh > 0:
 sys.stderr.write("\n*** Preprocess raw files to remove reduntant reads\n")
 
-filteredSampleBam= os.path.join(tmpdir, os.path.basename(treatment).split('.')[0] + '.removed.bam')
-filteredControlBam= os.path.join(tmpdir, os.path.basename(control).split('.')[0] + '.removed.bam')
+filteredSampleBam= os.path.join(tmpdir, os.path.basename(treatment) + '.removed.bam')
+filteredControlBam= os.path.join(tmpdir, os.path.basename(control) + '.removed.bam')
 
 procs= []
 for inBam, outBam in zip([treatment, control], [filteredSampleBam, filteredControlBam]):
@@ -210,7 +211,7 @@ cmd= """export PYTHONPATH=%(pythonpath)s
             %{'pythonpath': pythonpath, 
               'python': python, 
               'script': os.path.join(srcDir, 'find_islands_in_pr.py'), 
-              'bam': args.treatment,
+              'bam': treatment,
               'summaryGraph': summaryGraph, 
               'windowSize': args.windowSize,
               'gapSize': args.gapSize * args.windowSize,
