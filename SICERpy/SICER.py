@@ -33,11 +33,6 @@ parser.add_argument('--control', '-c',
                    help='''Control (input) file in bam format
                    ''')
 
-#parser.add_argument('--species', '-s',
-#                   required= True,
-#                   help='''Species to use. See or edit lib/GenomeData.py for available species. 
-#                   ''')
-
 parser.add_argument('--effGenomeSize', '-gs',
                    required= False,
                    default= 0.74,     
@@ -122,34 +117,18 @@ if not args.keeptmp:
 
 os.chdir(tmpdir)
 
-## Create output dir see also 
-## http://stackoverflow.com/questions/273192/how-to-check-if-a-directory-exists-and-create-it-if-necessary
-#try:
-#    os.makedirs(args.outputDir)
-#except OSError as exception:
-#    if exception.errno != errno.EEXIST:
-#        raise
-## Work with full paths
-# outputDir= os.path.abspath(args.outputDir)
-
-## Basename
-#if not args.basename:
-#    basename= os.path.basename(treatment).split('.')[0]
-#else:
-#    basename= args.basename
-
 ## Remove reduntant reads
 ## ======================
 #if args.redThresh > 0:
 sys.stderr.write("\n*** Preprocess raw files to remove reduntant reads\n")
 
-filteredSampleBam= os.path.join(tmpdir, os.path.basename(treatment) + '.removed.bam')
-filteredControlBam= os.path.join(tmpdir, os.path.basename(control) + '.removed.bam')
+filteredSampleBam= tempfile.NamedTemporaryFile(dir= tmpdir, prefix= os.path.basename(treatment)+'.', suffix= '.rm.bam').name  #os.path.join(tmpdir, os.path.basename(treatment) + '.removed.bam')
+filteredControlBam= tempfile.NamedTemporaryFile(dir= tmpdir, prefix= os.path.basename(control)+'.', suffix= '.rm.bam').name #os.path.join(tmpdir, os.path.basename(control) + '.removed.bam')
 
 procs= []
 for inBam, outBam in zip([treatment, control], [filteredSampleBam, filteredControlBam]):
     # Create a separate dir for each process so tmp files don't bother each other
-    tmpRedDir= os.path.join(tmpdir, 'tmp_' + os.path.basename(inBam) + '_dir')
+    tmpRedDir= os.path.join(tmpdir, 'tmp_' + os.path.basename(outBam) + '_dir')
     os.makedirs(tmpRedDir)
     cmd= """cd %(tmpRedDir)s
 export PYTHONPATH=%(pythonpath)s
