@@ -95,7 +95,7 @@ parser.add_argument('--keeptmp',
                    help='''For debugging: Do not delete temp directory at the end of run.
                    ''')
 
-parser.add_argument('--version', action='version', version='%(prog)s 0.1.0')
+parser.add_argument('--version', action='version', version='%(prog)s 0.1.1')
 
 
 args= parser.parse_args()
@@ -122,8 +122,8 @@ os.chdir(tmpdir)
 #if args.redThresh > 0:
 sys.stderr.write("\n*** Preprocess raw files to remove reduntant reads\n")
 
-filteredSampleBam= tempfile.NamedTemporaryFile(dir= tmpdir, prefix= os.path.basename(treatment)+'.', suffix= '.rm.bam').name  #os.path.join(tmpdir, os.path.basename(treatment) + '.removed.bam')
-filteredControlBam= tempfile.NamedTemporaryFile(dir= tmpdir, prefix= os.path.basename(control)+'.', suffix= '.rm.bam').name #os.path.join(tmpdir, os.path.basename(control) + '.removed.bam')
+filteredSampleBam= tempfile.NamedTemporaryFile(dir= tmpdir, prefix= os.path.basename(treatment)+'.', suffix= '.rm.bam').name 
+filteredControlBam= tempfile.NamedTemporaryFile(dir= tmpdir, prefix= os.path.basename(control)+'.', suffix= '.rm.bam').name
 
 procs= []
 for inBam, outBam in zip([treatment, control], [filteredSampleBam, filteredControlBam]):
