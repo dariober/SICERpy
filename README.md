@@ -80,12 +80,12 @@ awk '$8 < 0.01' peaks.bed > peaks.01.bed
 
 ```
 SICER.py -h
-usage: SICER.py [-h] [--treatment TREATMENT] --control CONTROL --species
-                SPECIES [--effGenomeSize EFFGENOMESIZE]
-                [--requiredFlag REQUIREDFLAG] [--filterFlag FILTERFLAG]
-                [--mapq MAPQ] [--redThresh REDTHRESH]
-                [--windowSize WINDOWSIZE] [--gapSize GAPSIZE]
-                [--fragSize FRAGSIZE] [--keeptmp] [--version]
+iusage: SICER.py [-h] [--treatment TREATMENT] --control CONTROL
+                [--effGenomeSize EFFGENOMESIZE] [--requiredFlag REQUIREDFLAG]
+                [--filterFlag FILTERFLAG] [--mapq MAPQ]
+                [--redThresh REDTHRESH] [--windowSize WINDOWSIZE]
+                [--gapSize GAPSIZE] [--fragSize FRAGSIZE] [--keeptmp]
+                [--version]
 
 DESCRIPTION
 
@@ -105,28 +105,38 @@ optional arguments:
                         Control (input) file in bam format
                                            
   --effGenomeSize EFFGENOMESIZE, -gs EFFGENOMESIZE
-                        Effective Genome as fraction of the genome size. It depends on read length. Default 0.74.
+                        Effective Genome as fraction of the genome size. It
+                        depends on read length. Default 0.74.
                                            
   --requiredFlag REQUIREDFLAG, -f REQUIREDFLAG
-                        Keep reads with these bits set in flag. Same as `samtools view -f`. Default 0
+                        Keep reads with these bits set in flag. Same as
+                        `samtools view -f`. Default 0
                                            
   --filterFlag FILTERFLAG, -F FILTERFLAG
-                        Discard reads with these bits set in flag. Same as `samtools view -F`. Default 4. 
-                        You probably want to discard also second-in-pair reads, secondary and supplementary alignments, reads failing QC.
+                        Discard reads with these bits set in flag. Same as
+                        `samtools view -F`. Default 4.  You probably want to
+                        discard also second-in-pair reads, secondary and
+                        supplementary alignments, reads failing QC.
                                            
   --mapq MAPQ, -q MAPQ  Discard reads with mapping quality lower than this. Default 5.
                                            
   --redThresh REDTHRESH, -rt REDTHRESH
-                        Redundancy threshold to keep reads mapping to the same position on the same strand. Default 0 (do not filter for redundancy). 
+                        Redundancy threshold to keep reads mapping to the same
+                        position on the same strand. Default 0 (do not filter
+                        for redundancy). 
                                            
   --windowSize WINDOWSIZE, -w WINDOWSIZE
-                        Size of the windows to scan the genome. WINDOW_SIZE is the smallest possible island. Default 200.
+                        Size of the windows to scan the genome. WINDOW_SIZE is
+                        the smallest possible island. Default 200.
                                            
   --gapSize GAPSIZE, -g GAPSIZE
-                        Multiple of window size used to determine the gap size. Must be an integer. Default: 3.
+                        Multiple of window size used to determine the gap size.
+                        Must be an integer. Default: 3.
                                            
   --fragSize FRAGSIZE, -fs FRAGSIZE
-                        Size of the sequenced fragment. The center of the the fragment will be taken as half the fragment size. Default 150.
+                        Size of the sequenced fragment. The center of the the
+                        fragment will be taken as half the fragment size.
+                        Default 150.
                                            
   --keeptmp             For debugging: Do not delete temp directory at the end of run.
                                            
